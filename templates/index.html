@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Flask App</title>
+</head>
+<body>
+
+    <h1>Welcome to Flask!</h1>
+    <p>Your Flask application is running successfully.</p>
+
+    <button onclick="getData()">Connect to Flask API</button>
+
+    <p id="result"></p>
+
+    <script>
+        async function getData() {
+            const response = await fetch('/api');
+            const data = await response.json();
+
+            document.getElementById('result').innerText =
+                data.message;
+        }
+    </script>
+
+</body>
+</html>
