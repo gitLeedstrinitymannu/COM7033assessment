@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Support when you need it.<br>Private, always.</h1>
+  <p>Ask for help with wellbeing, money, study, disability support or accommodation.
+     Your request is protected and only the right people can see it.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('register') }}">Create an account</a>
+    <a class="btn btn-ghost" href="{{ url_for('login') }}">Log in</a>
+  </div>
+</section>
+<section class="features">
+  <article class="card"><h3>📝 Simple to ask</h3><p>Submit a request in a couple of minutes, from any device.</p></article>
+  <article class="card"><h3>👀 Stay informed</h3><p>Follow your case from New to Closed without chasing emails.</p></article>
+  <article class="card"><h3>🔒 Private by design</h3><p>Sensitive details are encrypted and every access is recorded.</p></article>
+</section>
+{% endblock %}

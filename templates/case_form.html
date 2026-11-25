@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit request' if editing else 'New request' }}{% endblock %}
+{% block content %}
+<section class="auth-card card wide">
+  <h1>{{ 'Edit your request' if editing else 'New support request' }}</h1>
+  <p class="muted">Share as much or as little as you're comfortable with. Your request is encrypted.</p>
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field"><label for="category">What do you need help with?</label>
+      <select class="input" id="category" name="category" required>
+        <option value="">Choose a category</option>
+        {% for c in categories %}<option value="{{ c }}" {% if form.category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select></div>
+    <div class="field"><label for="description">Tell us what's happening</label>
+      <textarea class="input" id="description" name="description" rows="7" maxlength="3000"
+                placeholder="What's going on, and how can we help?" required>{{ form.description or '' }}</textarea>
+      <small class="hint right" id="char-count" aria-live="polite"></small></div>
+    {% if not editing %}
+    <div class="field check"><label><input type="checkbox" name="consent" value="y"> I understand that student support staff will read this request.</label></div>
+    {% endif %}
+    <button class="btn btn-primary btn-block" type="submit">{{ 'Save changes' if editing else 'Submit request' }}</button>
+  </form>
+  <p class="muted center">In an emergency, call 999. This service isn't monitored around the clock.</p>
+</section>
+{% endblock %}

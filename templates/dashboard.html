@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_tiles %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Hello, {{ user.full_name.split(' ')[0] }} 👋</h1>
+
+{% if user.role == 'student' %}
+  <p class="muted">Here's where your support requests stand.</p>
+  {{ status_tiles(counts) }}
+  <div class="actions">
+    <div class="card"><h3>📝 New support request</h3><p class="muted">Tell us what you need help with.</p>
+      <a class="btn btn-primary" href="{{ url_for('new_case') }}">Start a request</a></div>
+    <div class="card"><h3>📂 My requests</h3><p class="muted">Follow progress and see updates.</p>
+      <a class="btn btn-ghost" href="{{ url_for('my_cases') }}">View my requests</a></div>
+  </div>
+
+{% elif user.role == 'staff' %}
+  <p class="muted">Your case queue at a glance.</p>
+  {{ status_tiles(counts) }}
+  <div class="actions">
+    <div class="card"><h3>🙋 Assigned to me</h3><p class="tile-n">{{ mine }}</p><p class="muted">open cases</p>
+      <a class="btn btn-ghost" href="{{ url_for('staff_queue', view='mine') }}">View mine</a></div>
+    <div class="card"><h3>📥 Unassigned</h3><p class="tile-n">{{ unassigned }}</p><p class="muted">waiting to be picked up</p>
+      <a class="btn btn-ghost" href="{{ url_for('staff_queue', view='unassigned') }}">View unassigned</a></div>
+    <div class="card"><h3>📋 Case queue</h3><p class="muted">Review, assign and update cases.</p>
+      <a class="btn btn-primary" href="{{ url_for('staff_queue') }}">Open queue</a></div>
+  </div>
+
+{% else %}
+  <p class="muted">System overview. Case content is hidden from administrators by design.</p>
+  <div class="tiles">
+    {% for role, n in by_role.items() %}
+      <div class="tile"><span class="tile-n">{{ n }}</span><span class="tile-l">{{ role|capitalize }}s</span></div>
+    {% endfor %}
+  </div>
+  <h2>Cases by status</h2>
+  {{ status_tiles(counts) }}
+  <h2>Recent activity</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Time (UTC)</th><th>Action</th><th>Role</th></tr></thead>
+    <tbody>
+    {% for e in recent %}<tr><td>{{ e.timestamp|fmt_dt }}</td><td>{{ e.action }}</td><td>{{ e.actor_role or '-' }}</td></tr>
+    {% else %}<tr><td colspan="3" class="muted">No activity yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+{% endif %}
+{% endblock %}

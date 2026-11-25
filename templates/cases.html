@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge %}
+{% block title %}{{ 'Case queue' if staff_view else 'My requests' }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ 'Case queue' if staff_view else 'My support requests' }}</h1>
+  {% if not staff_view %}<a class="btn btn-primary" href="{{ url_for('new_case') }}">+ New request</a>{% endif %}
+</div>
+
+{% if staff_view %}
+<form method="get" class="filters card">
+  <label>View
+    <select name="view" class="input">
+      {% for v, label in [('all', 'All cases'), ('mine', 'Assigned to me'), ('unassigned', 'Unassigned')] %}
+        <option value="{{ v }}" {% if filters.view == v %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select></label>
+  <label>Status
+    <select name="status" class="input"><option value="">Any</option>
+      {% for s in statuses %}<option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select></label>
+  <label>Category
+    <select name="category" class="input"><option value="">Any</option>
+      {% for c in categories %}<option value="{{ c }}" {% if filters.category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+    </select></label>
+  <button class="btn btn-primary" type="submit">Apply</button>
+</form>
+{% endif %}
+
+{% if cases %}
+<div class="table-wrap"><table>
+  <thead><tr>
+    <th>Reference</th>{% if staff_view %}<th>Student</th>{% endif %}<th>Category</th><th>Status</th>
+    {% if staff_view %}<th>Priority</th><th>Assigned</th>{% else %}<th>Submitted</th>{% endif %}<th>Updated</th>
+  </tr></thead>
+  <tbody>
+  {% for c in cases %}
+    <tr>
+      <td><a href="{{ url_for('staff_case' if staff_view else 'view_case', reference=c.reference) }}">{{ c.reference }}</a></td>
+      {% if staff_view %}<td>{{ c.student_name }}</td>{% endif %}
+      <td>{{ c.category }}</td><td>{{ status_badge(c.status) }}</td>
+      {% if staff_view %}<td>{{ priority_badge(c.priority) }}</td><td>{{ c.assigned_to_name or '-' }}</td>
+      {% else %}<td>{{ c.submitted_at|fmt_dt }}</td>{% endif %}
+      <td>{{ c.updated_at|fmt_dt }}</td>
+    </tr>
+  {% endfor %}
+  </tbody></table></div>
+{% else %}
+<div class="card empty center">
+  <h3>{{ 'No cases match' if staff_view else 'No requests yet' }}</h3>
+  <p class="muted">{{ 'Try changing the filters.' if staff_view else 'When you need help, start a request. It only takes a couple of minutes.' }}</p>
+  {% if not staff_view %}<a class="btn btn-primary" href="{{ url_for('new_case') }}">Start a request</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% macro status_badge(status) %}<span class="badge badge-{{ status|lower|replace(' ', '-') }}">{{ status }}</span>{% endmacro %}
+{% macro priority_badge(priority) %}<span class="badge badge-p-{{ priority|lower }}">{{ priority }}</span>{% endmacro %}
+{% macro status_tiles(counts) %}
+<div class="tiles">
+  {% for status, n in counts.items() %}
+    <div class="tile tile-{{ status|lower|replace(' ', '-') }}"><span class="tile-n">{{ n }}</span><span class="tile-l">{{ status }}</span></div>
+  {% endfor %}
+</div>
+{% endmacro %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge %}
+{% block title %}{{ case.reference }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('staff_queue') if staff_view else url_for('my_cases') }}">← Back</a>
+<div class="page-head">
+  <h1>{{ case.reference }}</h1>
+  <div>{{ status_badge(case.status) }}{% if staff_view %} {{ priority_badge(case.priority) }}{% endif %}</div>
+</div>
+
+<div class="detail-grid{% if not staff_view %} single{% endif %}">
+  <div>
+    <div class="card">
+      <dl class="meta">
+        <div><dt>Category</dt><dd>{{ case.category }}</dd></div>
+        <div><dt>Submitted</dt><dd>{{ case.submitted_at|fmt_dt }} UTC</dd></div>
+        <div><dt>Last update</dt><dd>{{ case.updated_at|fmt_dt }} UTC</dd></div>
+        <div><dt>Handled by</dt><dd>{{ case.assigned_to_name or 'Not assigned yet' }}</dd></div>
+      </dl>
+      <h3>{{ "Student's request" if staff_view else 'Your request' }}</h3>
+      <p class="prewrap">{{ case.description }}</p>
+
+      {% if not staff_view and case.status == 'New' %}
+      <div class="row-actions">
+        <a class="btn btn-ghost" href="{{ url_for('edit_case', reference=case.reference) }}">Edit request</a>
+        <form method="post" action="{{ url_for('withdraw_case', reference=case.reference) }}" class="inline"
+              data-confirm="Withdraw this request? You can submit a new one later.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-danger" type="submit">Withdraw request</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if staff_view %}
+    <div class="card stack">
+      <h3>🔒 Internal staff notes</h3>
+      <p class="muted">Students cannot see these notes.</p>
+      {% for n in notes %}
+        <div class="note"><p class="prewrap">{{ n.text }}</p>
+          <small class="muted">{{ n.author_name }} · {{ n.created_at|fmt_dt }} UTC</small></div>
+      {% else %}<p class="muted">No notes yet.</p>{% endfor %}
+      <form method="post" action="{{ url_for('add_note', reference=case.reference) }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label for="note">Add an internal note</label>
+          <textarea class="input" id="note" name="note" rows="4" maxlength="2000" required></textarea></div>
+        <button class="btn btn-primary" type="submit">Add note</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if staff_view %}
+  <aside>
+    <div class="card">
+      <h3>Student</h3>
+      <dl class="meta one">
+        <div><dt>Name</dt><dd>{{ case.student_name }}</dd></div>
+        <div><dt>Student ID</dt><dd>{{ case.student_number }}</dd></div>
+        <div><dt>Course</dt><dd>{{ case.student_course or '-' }}</dd></div>
+      </dl>
+    </div>
+    <div class="card stack">
+      <h3>Manage case</h3>
+      <form method="post" action="{{ url_for('update_case', reference=case.reference) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label for="status">Status</label>
+          <select class="input" id="status" name="status">
+            {% for s in statuses %}<option value="{{ s }}" {% if case.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="priority">Priority</label>
+          <select class="input" id="priority" name="priority">
+            {% for p in priorities %}<option value="{{ p }}" {% if case.priority == p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="assigned">Assigned to</label>
+          <select class="input" id="assigned" name="assigned"><option value="">Unassigned</option>
+            {% for s in staff_list %}<option value="{{ s.id }}" {% if case.assigned_to_id == s.id %}selected{% endif %}>{{ s.full_name }}</option>{% endfor %}</select></div>
+        <button class="btn btn-primary btn-block" type="submit">Save changes</button>
+      </form>
+      {% if case.status == 'Closed' %}
+      <form method="post" action="{{ url_for('archive_case', reference=case.reference) }}" class="stack"
+            data-confirm="Archive this case? It will leave the queue.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost btn-block" type="submit">Archive closed case</button>
+      </form>
+      {% endif %}
+    </div>
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

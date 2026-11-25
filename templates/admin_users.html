@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-head"><h1>User accounts</h1></div>
+<p class="muted">Disabling an account signs the person out straight away. Re-enabling also clears a lockout.
+   Staff and admin accounts are created with <code>python create_user.py</code>.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+  <tbody>
+  {% for p in people %}
+    <tr>
+      <td>{{ p.full_name }}</td><td>{{ p.email }}</td><td><span class="badge">{{ p.role }}</span></td>
+      <td>{% if not p.is_active %}Disabled{% elif p.locked_until and p.locked_until > now %}Locked{% else %}Active{% endif %}</td>
+      <td>{{ p.last_login_at or '-' }}</td>
+      <td>{% if p.id != user.id %}
+        <form method="post" action="{{ url_for('toggle_user', user_id=p.id) }}" class="inline"
+              data-confirm="{{ 'Enable' if not p.is_active else 'Disable' }} this account?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-ghost" type="submit">{{ 'Enable' if not p.is_active else 'Disable' }}</button>
+        </form>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody></table></div>
+{% endblock %}

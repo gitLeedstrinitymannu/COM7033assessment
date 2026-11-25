@@ -1,4 +1,9 @@
 Flask
+Flask-WTF
+argon2-cffi
+cryptography
 pymongo
 python-dotenv
 certifi
+pytest
+mongomock
